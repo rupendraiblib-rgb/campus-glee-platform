@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /students
+Disallow: /attendance
+Disallow: /fees
+Disallow: /exams
+Disallow: /timetable
+Disallow: /settings
