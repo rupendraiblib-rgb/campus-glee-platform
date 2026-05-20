@@ -10,6 +10,7 @@ import {
   verifyRazorpayPayment,
   createDemoInvoice,
 } from "@/lib/razorpay.functions";
+import { downloadReceipt } from "@/lib/receipt";
 
 export const Route = createFileRoute("/_authenticated/fees")({
   head: () => ({ meta: [{ title: "Fees — Smart School ERP" }] }),
@@ -152,7 +153,19 @@ function FeesPage() {
                   </span>
                 </td>
                 <td className="p-3 text-right">
-                  {i.status !== "paid" && (
+                  {i.status === "paid" ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        downloadReceipt(i.id).catch((e) =>
+                          toast.error(e.message ?? "Could not download receipt"),
+                        )
+                      }
+                    >
+                      Receipt
+                    </Button>
+                  ) : (
                     <Button
                       size="sm"
                       disabled={payingId === i.id}
