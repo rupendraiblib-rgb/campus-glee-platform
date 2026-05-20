@@ -43,8 +43,9 @@ function AttendancePage() {
 
   const save = async () => {
     if (!profile?.school_id || !students) return;
+    const schoolId = profile.school_id;
     const rows = students.map((s) => ({
-      school_id: profile.school_id, student_id: s.id, date, status: current(s.id),
+      school_id: schoolId, student_id: s.id, date, status: current(s.id),
     }));
     const { error } = await supabase.from("attendance").upsert(rows, { onConflict: "student_id,date" });
     if (error) return toast.error(error.message);

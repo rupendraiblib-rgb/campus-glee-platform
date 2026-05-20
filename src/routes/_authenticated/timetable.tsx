@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/timetable")({
@@ -20,12 +21,12 @@ function TimetablePage() {
           <div className="p-3 bg-muted/50 font-medium">Time</div>
           {days.map(d => <div key={d} className="p-3 bg-muted/50 font-medium border-l border-border">{d}</div>)}
           {slots.map((t) => (
-            <>
-              <div key={t} className="p-3 border-t border-border text-muted-foreground">{t}</div>
+            <Fragment key={t}>
+              <div className="p-3 border-t border-border text-muted-foreground">{t}</div>
               {days.map((d) => (
                 <div key={d+t} className="p-3 border-t border-l border-border text-muted-foreground">—</div>
               ))}
-            </>
+            </Fragment>
           ))}
         </div>
       </div>
