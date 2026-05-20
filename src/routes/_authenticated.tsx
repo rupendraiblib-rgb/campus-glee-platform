@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { bootstrapUser } from "@/lib/bootstrap.functions";
 import {
-  LayoutDashboard, Users, ClipboardCheck, Wallet, GraduationCap, Calendar, Settings, LogOut, Bell,
+  LayoutDashboard, Users, ClipboardCheck, Wallet, GraduationCap, Calendar, Settings, LogOut, Bell, BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/_authenticated")({
 const nav = [
   { url: "/dashboard", title: "Dashboard", icon: LayoutDashboard },
   { url: "/students", title: "Students", icon: Users },
+  { url: "/academics", title: "Academics", icon: BookOpen },
   { url: "/attendance", title: "Attendance", icon: ClipboardCheck },
   { url: "/fees", title: "Fees", icon: Wallet },
   { url: "/exams", title: "Exams", icon: GraduationCap },
