@@ -30,6 +30,7 @@ const nav = [
   { url: "/exams", title: "Exams", icon: GraduationCap },
   { url: "/timetable", title: "Timetable", icon: Calendar },
   { url: "/announcements", title: "Announcements", icon: Megaphone },
+  { url: "/library", title: "Library", icon: Library },
   { url: "/settings", title: "Settings", icon: Settings },
 ] as const;
 
