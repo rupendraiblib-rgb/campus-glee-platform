@@ -29,6 +29,7 @@ const nav = [
   { url: "/fees", title: "Fees", icon: Wallet },
   { url: "/exams", title: "Exams", icon: GraduationCap },
   { url: "/timetable", title: "Timetable", icon: Calendar },
+  { url: "/announcements", title: "Announcements", icon: Megaphone },
   { url: "/settings", title: "Settings", icon: Settings },
 ] as const;
 
