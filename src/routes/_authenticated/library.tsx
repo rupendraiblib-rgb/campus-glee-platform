@@ -146,7 +146,7 @@ function LoansTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("book_loans")
-        .select("id, issue_date, due_date, return_date, status, library_books(title), students(full_name, admission_no)")
+        .select("id, book_id, issue_date, due_date, return_date, status, library_books(title), students(full_name, admission_no)")
         .order("created_at", { ascending: false }).limit(200);
       if (error) throw error;
       return data;
