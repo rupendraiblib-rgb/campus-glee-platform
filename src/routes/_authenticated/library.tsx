@@ -268,7 +268,7 @@ function LoansTab() {
                   <Badge>Issued</Badge>
                 )}
                 {l.status !== "returned" && (
-                  <Button size="sm" variant="outline" onClick={() => markReturned(l.id, (l as any).library_books?.id ?? "")}>
+                  <Button size="sm" variant="outline" onClick={() => markReturned(l.id, l.book_id)}>
                     Mark returned
                   </Button>
                 )}
