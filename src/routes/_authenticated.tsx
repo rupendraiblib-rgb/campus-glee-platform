@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { bootstrapUser } from "@/lib/bootstrap.functions";
 import {
-  LayoutDashboard, Users, ClipboardCheck, Wallet, GraduationCap, Calendar, Settings, LogOut, Bell, BookOpen,
+  LayoutDashboard, Users, ClipboardCheck, Wallet, GraduationCap, Calendar, Settings, LogOut, Bell, BookOpen, Megaphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
