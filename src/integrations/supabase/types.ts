@@ -113,6 +113,45 @@ export type Database = {
           },
         ]
       }
+      book_loans: {
+        Row: {
+          book_id: string
+          created_at: string
+          due_date: string
+          id: string
+          issue_date: string
+          issued_by: string | null
+          return_date: string | null
+          school_id: string
+          status: Database["public"]["Enums"]["loan_status"]
+          student_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          issue_date?: string
+          issued_by?: string | null
+          return_date?: string | null
+          school_id: string
+          status?: Database["public"]["Enums"]["loan_status"]
+          student_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          issue_date?: string
+          issued_by?: string | null
+          return_date?: string | null
+          school_id?: string
+          status?: Database["public"]["Enums"]["loan_status"]
+          student_id?: string
+        }
+        Relationships: []
+      }
       classes: {
         Row: {
           created_at: string
@@ -428,6 +467,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      library_books: {
+        Row: {
+          author: string | null
+          available_copies: number
+          category: string | null
+          created_at: string
+          id: string
+          isbn: string | null
+          school_id: string
+          title: string
+          total_copies: number
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          available_copies?: number
+          category?: string | null
+          created_at?: string
+          id?: string
+          isbn?: string | null
+          school_id: string
+          title: string
+          total_copies?: number
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          available_copies?: number
+          category?: string | null
+          created_at?: string
+          id?: string
+          isbn?: string | null
+          school_id?: string
+          title?: string
+          total_copies?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -869,6 +947,7 @@ export type Database = {
       attendance_status: "present" | "absent" | "late" | "leave"
       gender_type: "male" | "female" | "other"
       invoice_status: "pending" | "paid" | "partial" | "overdue" | "cancelled"
+      loan_status: "issued" | "returned" | "overdue"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1009,6 +1088,7 @@ export const Constants = {
       attendance_status: ["present", "absent", "late", "leave"],
       gender_type: ["male", "female", "other"],
       invoice_status: ["pending", "paid", "partial", "overdue", "cancelled"],
+      loan_status: ["issued", "returned", "overdue"],
     },
   },
 } as const
