@@ -875,6 +875,112 @@ export type Database = {
           },
         ]
       }
+      transport_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          pickup_stop: string | null
+          route_id: string
+          school_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pickup_stop?: string | null
+          route_id: string
+          school_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pickup_stop?: string | null
+          route_id?: string
+          school_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_assignments_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "transport_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_routes: {
+        Row: {
+          created_at: string
+          description: string | null
+          fare: number | null
+          id: string
+          name: string
+          school_id: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          fare?: number | null
+          id?: string
+          name: string
+          school_id: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          fare?: number | null
+          id?: string
+          name?: string
+          school_id?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_routes_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "transport_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_vehicles: {
+        Row: {
+          capacity: number
+          created_at: string
+          driver_name: string | null
+          driver_phone: string | null
+          id: string
+          model: string | null
+          school_id: string
+          vehicle_no: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          model?: string | null
+          school_id: string
+          vehicle_no: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          model?: string | null
+          school_id?: string
+          vehicle_no?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { bootstrapUser } from "@/lib/bootstrap.functions";
 import {
-  LayoutDashboard, Users, ClipboardCheck, Wallet, GraduationCap, Calendar, Settings, LogOut, Bell, BookOpen, Megaphone, Library,
+  LayoutDashboard, Users, ClipboardCheck, Wallet, GraduationCap, Calendar, Settings, LogOut, Bell, BookOpen, Megaphone, Library, Bus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +31,7 @@ const nav = [
   { url: "/timetable", title: "Timetable", icon: Calendar },
   { url: "/announcements", title: "Announcements", icon: Megaphone },
   { url: "/library", title: "Library", icon: Library },
+  { url: "/transport", title: "Transport", icon: Bus },
   { url: "/settings", title: "Settings", icon: Settings },
 ] as const;
 
