@@ -10,9 +10,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, BookMarked, Trash2, ArrowLeftRight, Search } from "lucide-react";
+import { Plus, BookMarked, Trash2, ArrowLeftRight, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { z } from "zod";
+
+const bookSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(255, "Title too long"),
+  author: z.string().trim().max(255, "Author too long").optional().or(z.literal("")),
+  isbn: z.string().trim().max(20, "ISBN too long").regex(/^[0-9Xx\-\s]*$/, "ISBN may only contain digits, X, dashes").optional().or(z.literal("")),
+  category: z.string().trim().max(100, "Category too long").optional().or(z.literal("")),
+  total_copies: z.coerce.number().int().min(1, "At least 1 copy").max(10000, "Too many copies"),
+});
 
 export const Route = createFileRoute("/_authenticated/library")({
   head: () => ({ meta: [{ title: "Library — Smart School ERP" }] }),
@@ -42,8 +51,10 @@ function BooksTab() {
   const qc = useQueryClient();
   const { profile } = useAuth();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
   const [q, setQ] = useState("");
-  const [form, setForm] = useState({ title: "", author: "", isbn: "", category: "", total_copies: "1" });
+  const empty = { title: "", author: "", isbn: "", category: "", total_copies: "1" };
+  const [form, setForm] = useState(empty);
 
   const { data: books } = useQuery({
     queryKey: ["library-books"],
@@ -58,19 +69,57 @@ function BooksTab() {
     !q || [b.title, b.author, b.isbn, b.category].some((f) => f?.toLowerCase().includes(q.toLowerCase()))
   );
 
-  const add = async (e: React.FormEvent) => {
+  const openCreate = () => { setEditing(null); setForm(empty); setOpen(true); };
+  const openEdit = (b: any) => {
+    setEditing(b);
+    setForm({
+      title: b.title ?? "",
+      author: b.author ?? "",
+      isbn: b.isbn ?? "",
+      category: b.category ?? "",
+      total_copies: String(b.total_copies ?? 1),
+    });
+    setOpen(true);
+  };
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.school_id) return toast.error("No school assigned.");
-    const copies = Math.max(1, Number(form.total_copies) || 1);
-    const { error } = await supabase.from("library_books").insert({
-      school_id: profile.school_id,
-      title: form.title, author: form.author || null, isbn: form.isbn || null,
-      category: form.category || null, total_copies: copies, available_copies: copies,
-    });
-    if (error) return toast.error(error.message);
-    toast.success("Book added.");
-    setOpen(false); setForm({ title: "", author: "", isbn: "", category: "", total_copies: "1" });
+    const parsed = bookSchema.safeParse(form);
+    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
+    const v = parsed.data;
+
+    if (editing) {
+      const issued = (editing.total_copies ?? 0) - (editing.available_copies ?? 0);
+      if (v.total_copies < issued) {
+        return toast.error(`Copies cannot be less than currently issued (${issued}).`);
+      }
+      const { error } = await supabase.from("library_books").update({
+        title: v.title,
+        author: v.author || null,
+        isbn: v.isbn || null,
+        category: v.category || null,
+        total_copies: v.total_copies,
+        available_copies: v.total_copies - issued,
+      }).eq("id", editing.id);
+      if (error) return toast.error(error.message);
+      toast.success("Book updated.");
+    } else {
+      const { error } = await supabase.from("library_books").insert({
+        school_id: profile.school_id,
+        title: v.title,
+        author: v.author || null,
+        isbn: v.isbn || null,
+        category: v.category || null,
+        total_copies: v.total_copies,
+        available_copies: v.total_copies,
+      });
+      if (error) return toast.error(error.message);
+      toast.success("Book added.");
+    }
+    setOpen(false); setEditing(null); setForm(empty);
     qc.invalidateQueries({ queryKey: ["library-books"] });
+    qc.invalidateQueries({ queryKey: ["loanable-books"] });
   };
 
   const remove = async (id: string) => {
@@ -86,21 +135,26 @@ function BooksTab() {
           <Search className="h-4 w-4 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title, author, ISBN..." className="max-w-sm" />
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Add book</Button></DialogTrigger>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm(empty); } }}>
+          <DialogTrigger asChild><Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Add book</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>New book</DialogTitle></DialogHeader>
-            <form onSubmit={add} className="space-y-3">
-              <div className="space-y-1.5"><Label>Title</Label><Input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+            <DialogHeader><DialogTitle>{editing ? "Edit book" : "New book"}</DialogTitle></DialogHeader>
+            <form onSubmit={submit} className="space-y-3">
+              <div className="space-y-1.5"><Label>Title</Label><Input required maxLength={255} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5"><Label>Author</Label><Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Category</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Fiction" /></div>
+                <div className="space-y-1.5"><Label>Author</Label><Input maxLength={255} value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /></div>
+                <div className="space-y-1.5"><Label>Category</Label><Input maxLength={100} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Fiction" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5"><Label>ISBN</Label><Input value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Copies</Label><Input type="number" min="1" value={form.total_copies} onChange={(e) => setForm({ ...form, total_copies: e.target.value })} /></div>
+                <div className="space-y-1.5"><Label>ISBN</Label><Input maxLength={20} value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} /></div>
+                <div className="space-y-1.5"><Label>Copies</Label><Input type="number" min="1" max="10000" value={form.total_copies} onChange={(e) => setForm({ ...form, total_copies: e.target.value })} /></div>
               </div>
-              <DialogFooter><Button type="submit">Save</Button></DialogFooter>
+              {editing && (
+                <p className="text-xs text-muted-foreground">
+                  Currently issued: {(editing.total_copies ?? 0) - (editing.available_copies ?? 0)}. Total copies cannot go below that.
+                </p>
+              )}
+              <DialogFooter><Button type="submit">{editing ? "Save changes" : "Save"}</Button></DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -120,10 +174,13 @@ function BooksTab() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Badge variant={b.available_copies > 0 ? "secondary" : "outline"}>
                 {b.available_copies}/{b.total_copies} available
               </Badge>
+              <Button size="icon" variant="ghost" onClick={() => openEdit(b)}>
+                <Pencil className="h-4 w-4 text-muted-foreground" />
+              </Button>
               <Button size="icon" variant="ghost" onClick={() => remove(b.id)}>
                 <Trash2 className="h-4 w-4 text-muted-foreground" />
               </Button>
