@@ -85,6 +85,7 @@ function BooksTab() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canManage) return toast.error("You don't have permission to manage books.");
     if (!profile?.school_id) return toast.error("No school assigned.");
     const parsed = bookSchema.safeParse(form);
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
