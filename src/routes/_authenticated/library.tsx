@@ -125,6 +125,7 @@ function BooksTab() {
   };
 
   const remove = async (id: string) => {
+    if (!canManage) return toast.error("You don't have permission to delete books.");
     const { error } = await supabase.from("library_books").delete().eq("id", id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["library-books"] });
