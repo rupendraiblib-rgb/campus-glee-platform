@@ -338,7 +338,7 @@ function LoansTab() {
                 ) : (
                   <Badge>Issued</Badge>
                 )}
-                {l.status !== "returned" && (
+                {l.status !== "returned" && canManage && (
                   <Button size="sm" variant="outline" onClick={() => markReturned(l.id, l.book_id)}>
                     Mark returned
                   </Button>
