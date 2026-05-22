@@ -31,6 +31,7 @@ const nav = [
   { url: "/timetable", title: "Timetable", icon: Calendar },
   { url: "/announcements", title: "Announcements", icon: Megaphone },
   { url: "/library", title: "Library", icon: Library },
+  { url: "/transport", title: "Transport", icon: Bus },
   { url: "/settings", title: "Settings", icon: Settings },
 ] as const;
 
