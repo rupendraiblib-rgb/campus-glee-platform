@@ -183,12 +183,16 @@ function BooksTab() {
               <Badge variant={b.available_copies > 0 ? "secondary" : "outline"}>
                 {b.available_copies}/{b.total_copies} available
               </Badge>
-              <Button size="icon" variant="ghost" onClick={() => openEdit(b)}>
-                <Pencil className="h-4 w-4 text-muted-foreground" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => remove(b.id)}>
-                <Trash2 className="h-4 w-4 text-muted-foreground" />
-              </Button>
+              {canManage && (
+                <>
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(b)}>
+                    <Pencil className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(b.id)}>
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         ))}
