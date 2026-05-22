@@ -10,9 +10,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, BookMarked, Trash2, ArrowLeftRight, Search } from "lucide-react";
+import { Plus, BookMarked, Trash2, ArrowLeftRight, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { z } from "zod";
+
+const bookSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(255, "Title too long"),
+  author: z.string().trim().max(255, "Author too long").optional().or(z.literal("")),
+  isbn: z.string().trim().max(20, "ISBN too long").regex(/^[0-9Xx\-\s]*$/, "ISBN may only contain digits, X, dashes").optional().or(z.literal("")),
+  category: z.string().trim().max(100, "Category too long").optional().or(z.literal("")),
+  total_copies: z.coerce.number().int().min(1, "At least 1 copy").max(10000, "Too many copies"),
+});
 
 export const Route = createFileRoute("/_authenticated/library")({
   head: () => ({ meta: [{ title: "Library — Smart School ERP" }] }),
