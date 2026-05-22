@@ -49,7 +49,8 @@ function LibraryPage() {
 
 function BooksTab() {
   const qc = useQueryClient();
-  const { profile } = useAuth();
+  const { profile, hasRole } = useAuth();
+  const canManage = hasRole("super_admin") || hasRole("school_admin") || hasRole("staff");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [q, setQ] = useState("");
@@ -84,6 +85,7 @@ function BooksTab() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canManage) return toast.error("You don't have permission to manage books.");
     if (!profile?.school_id) return toast.error("No school assigned.");
     const parsed = bookSchema.safeParse(form);
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
@@ -123,6 +125,7 @@ function BooksTab() {
   };
 
   const remove = async (id: string) => {
+    if (!canManage) return toast.error("You don't have permission to delete books.");
     const { error } = await supabase.from("library_books").delete().eq("id", id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["library-books"] });
@@ -135,29 +138,31 @@ function BooksTab() {
           <Search className="h-4 w-4 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title, author, ISBN..." className="max-w-sm" />
         </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm(empty); } }}>
-          <DialogTrigger asChild><Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Add book</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{editing ? "Edit book" : "New book"}</DialogTitle></DialogHeader>
-            <form onSubmit={submit} className="space-y-3">
-              <div className="space-y-1.5"><Label>Title</Label><Input required maxLength={255} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5"><Label>Author</Label><Input maxLength={255} value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Category</Label><Input maxLength={100} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Fiction" /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5"><Label>ISBN</Label><Input maxLength={20} value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Copies</Label><Input type="number" min="1" max="10000" value={form.total_copies} onChange={(e) => setForm({ ...form, total_copies: e.target.value })} /></div>
-              </div>
-              {editing && (
-                <p className="text-xs text-muted-foreground">
-                  Currently issued: {(editing.total_copies ?? 0) - (editing.available_copies ?? 0)}. Total copies cannot go below that.
-                </p>
-              )}
-              <DialogFooter><Button type="submit">{editing ? "Save changes" : "Save"}</Button></DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {canManage && (
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm(empty); } }}>
+            <DialogTrigger asChild><Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Add book</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>{editing ? "Edit book" : "New book"}</DialogTitle></DialogHeader>
+              <form onSubmit={submit} className="space-y-3">
+                <div className="space-y-1.5"><Label>Title</Label><Input required maxLength={255} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><Label>Author</Label><Input maxLength={255} value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /></div>
+                  <div className="space-y-1.5"><Label>Category</Label><Input maxLength={100} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Fiction" /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><Label>ISBN</Label><Input maxLength={20} value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} /></div>
+                  <div className="space-y-1.5"><Label>Copies</Label><Input type="number" min="1" max="10000" value={form.total_copies} onChange={(e) => setForm({ ...form, total_copies: e.target.value })} /></div>
+                </div>
+                {editing && (
+                  <p className="text-xs text-muted-foreground">
+                    Currently issued: {(editing.total_copies ?? 0) - (editing.available_copies ?? 0)}. Total copies cannot go below that.
+                  </p>
+                )}
+                <DialogFooter><Button type="submit">{editing ? "Save changes" : "Save"}</Button></DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       <div className="divide-y divide-border">
         {(filtered?.length ?? 0) === 0 && <div className="p-8 text-center text-sm text-muted-foreground">No books yet.</div>}
@@ -178,12 +183,16 @@ function BooksTab() {
               <Badge variant={b.available_copies > 0 ? "secondary" : "outline"}>
                 {b.available_copies}/{b.total_copies} available
               </Badge>
-              <Button size="icon" variant="ghost" onClick={() => openEdit(b)}>
-                <Pencil className="h-4 w-4 text-muted-foreground" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => remove(b.id)}>
-                <Trash2 className="h-4 w-4 text-muted-foreground" />
-              </Button>
+              {canManage && (
+                <>
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(b)}>
+                    <Pencil className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(b.id)}>
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         ))}
@@ -194,7 +203,8 @@ function BooksTab() {
 
 function LoansTab() {
   const qc = useQueryClient();
-  const { profile, user } = useAuth();
+  const { profile, user, hasRole } = useAuth();
+  const canManage = hasRole("super_admin") || hasRole("school_admin") || hasRole("staff");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ book_id: "", student_id: "", due_date: "" });
 
@@ -228,6 +238,7 @@ function LoansTab() {
 
   const issue = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canManage) return toast.error("You don't have permission to issue books.");
     if (!profile?.school_id) return toast.error("No school assigned.");
     const book = books?.find((b) => b.id === form.book_id);
     if (!book || book.available_copies < 1) return toast.error("Book not available.");
@@ -248,6 +259,7 @@ function LoansTab() {
   };
 
   const markReturned = async (loanId: string, bookId: string) => {
+    if (!canManage) return toast.error("You don't have permission to return books.");
     const { error } = await supabase.from("book_loans")
       .update({ status: "returned", return_date: new Date().toISOString().slice(0, 10) })
       .eq("id", loanId);
@@ -270,34 +282,36 @@ function LoansTab() {
     <div className="rounded-2xl border border-border bg-card">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h2 className="font-semibold">Loans</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Issue book</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Issue book</DialogTitle></DialogHeader>
-            <form onSubmit={issue} className="space-y-3">
-              <div className="space-y-1.5"><Label>Book</Label>
-                <Select value={form.book_id} onValueChange={(v) => setForm({ ...form, book_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select available book" /></SelectTrigger>
-                  <SelectContent>
-                    {books?.map((b) => <SelectItem key={b.id} value={b.id}>{b.title} ({b.available_copies})</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5"><Label>Student</Label>
-                <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
-                  <SelectContent>
-                    {students?.map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name} • {s.admission_no}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5"><Label>Due date</Label>
-                <Input type="date" required min={today} value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
-              </div>
-              <DialogFooter><Button type="submit" disabled={!form.book_id || !form.student_id || !form.due_date}>Issue</Button></DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {canManage && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Issue book</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Issue book</DialogTitle></DialogHeader>
+              <form onSubmit={issue} className="space-y-3">
+                <div className="space-y-1.5"><Label>Book</Label>
+                  <Select value={form.book_id} onValueChange={(v) => setForm({ ...form, book_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select available book" /></SelectTrigger>
+                    <SelectContent>
+                      {books?.map((b) => <SelectItem key={b.id} value={b.id}>{b.title} ({b.available_copies})</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5"><Label>Student</Label>
+                  <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
+                    <SelectContent>
+                      {students?.map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name} • {s.admission_no}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5"><Label>Due date</Label>
+                  <Input type="date" required min={today} value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+                </div>
+                <DialogFooter><Button type="submit" disabled={!form.book_id || !form.student_id || !form.due_date}>Issue</Button></DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       <div className="divide-y divide-border">
         {(loans?.length ?? 0) === 0 && <div className="p-8 text-center text-sm text-muted-foreground">No loans recorded yet.</div>}
@@ -324,7 +338,7 @@ function LoansTab() {
                 ) : (
                   <Badge>Issued</Badge>
                 )}
-                {l.status !== "returned" && (
+                {l.status !== "returned" && canManage && (
                   <Button size="sm" variant="outline" onClick={() => markReturned(l.id, l.book_id)}>
                     Mark returned
                   </Button>
