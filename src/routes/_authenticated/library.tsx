@@ -282,34 +282,36 @@ function LoansTab() {
     <div className="rounded-2xl border border-border bg-card">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h2 className="font-semibold">Loans</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Issue book</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Issue book</DialogTitle></DialogHeader>
-            <form onSubmit={issue} className="space-y-3">
-              <div className="space-y-1.5"><Label>Book</Label>
-                <Select value={form.book_id} onValueChange={(v) => setForm({ ...form, book_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select available book" /></SelectTrigger>
-                  <SelectContent>
-                    {books?.map((b) => <SelectItem key={b.id} value={b.id}>{b.title} ({b.available_copies})</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5"><Label>Student</Label>
-                <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
-                  <SelectContent>
-                    {students?.map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name} • {s.admission_no}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5"><Label>Due date</Label>
-                <Input type="date" required min={today} value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
-              </div>
-              <DialogFooter><Button type="submit" disabled={!form.book_id || !form.student_id || !form.due_date}>Issue</Button></DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {canManage && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Issue book</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Issue book</DialogTitle></DialogHeader>
+              <form onSubmit={issue} className="space-y-3">
+                <div className="space-y-1.5"><Label>Book</Label>
+                  <Select value={form.book_id} onValueChange={(v) => setForm({ ...form, book_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select available book" /></SelectTrigger>
+                    <SelectContent>
+                      {books?.map((b) => <SelectItem key={b.id} value={b.id}>{b.title} ({b.available_copies})</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5"><Label>Student</Label>
+                  <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
+                    <SelectContent>
+                      {students?.map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name} • {s.admission_no}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5"><Label>Due date</Label>
+                  <Input type="date" required min={today} value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+                </div>
+                <DialogFooter><Button type="submit" disabled={!form.book_id || !form.student_id || !form.due_date}>Issue</Button></DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       <div className="divide-y divide-border">
         {(loans?.length ?? 0) === 0 && <div className="p-8 text-center text-sm text-muted-foreground">No loans recorded yet.</div>}
