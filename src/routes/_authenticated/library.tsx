@@ -138,29 +138,31 @@ function BooksTab() {
           <Search className="h-4 w-4 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title, author, ISBN..." className="max-w-sm" />
         </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm(empty); } }}>
-          <DialogTrigger asChild><Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Add book</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{editing ? "Edit book" : "New book"}</DialogTitle></DialogHeader>
-            <form onSubmit={submit} className="space-y-3">
-              <div className="space-y-1.5"><Label>Title</Label><Input required maxLength={255} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5"><Label>Author</Label><Input maxLength={255} value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Category</Label><Input maxLength={100} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Fiction" /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5"><Label>ISBN</Label><Input maxLength={20} value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Copies</Label><Input type="number" min="1" max="10000" value={form.total_copies} onChange={(e) => setForm({ ...form, total_copies: e.target.value })} /></div>
-              </div>
-              {editing && (
-                <p className="text-xs text-muted-foreground">
-                  Currently issued: {(editing.total_copies ?? 0) - (editing.available_copies ?? 0)}. Total copies cannot go below that.
-                </p>
-              )}
-              <DialogFooter><Button type="submit">{editing ? "Save changes" : "Save"}</Button></DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {canManage && (
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm(empty); } }}>
+            <DialogTrigger asChild><Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Add book</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>{editing ? "Edit book" : "New book"}</DialogTitle></DialogHeader>
+              <form onSubmit={submit} className="space-y-3">
+                <div className="space-y-1.5"><Label>Title</Label><Input required maxLength={255} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><Label>Author</Label><Input maxLength={255} value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /></div>
+                  <div className="space-y-1.5"><Label>Category</Label><Input maxLength={100} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Fiction" /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><Label>ISBN</Label><Input maxLength={20} value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} /></div>
+                  <div className="space-y-1.5"><Label>Copies</Label><Input type="number" min="1" max="10000" value={form.total_copies} onChange={(e) => setForm({ ...form, total_copies: e.target.value })} /></div>
+                </div>
+                {editing && (
+                  <p className="text-xs text-muted-foreground">
+                    Currently issued: {(editing.total_copies ?? 0) - (editing.available_copies ?? 0)}. Total copies cannot go below that.
+                  </p>
+                )}
+                <DialogFooter><Button type="submit">{editing ? "Save changes" : "Save"}</Button></DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       <div className="divide-y divide-border">
         {(filtered?.length ?? 0) === 0 && <div className="p-8 text-center text-sm text-muted-foreground">No books yet.</div>}
