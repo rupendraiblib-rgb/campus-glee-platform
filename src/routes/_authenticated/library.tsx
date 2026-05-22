@@ -49,7 +49,8 @@ function LibraryPage() {
 
 function BooksTab() {
   const qc = useQueryClient();
-  const { profile } = useAuth();
+  const { profile, hasRole } = useAuth();
+  const canManage = hasRole("super_admin") || hasRole("school_admin") || hasRole("staff");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [q, setQ] = useState("");
