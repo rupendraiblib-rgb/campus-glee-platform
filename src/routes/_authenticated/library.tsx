@@ -238,6 +238,7 @@ function LoansTab() {
 
   const issue = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canManage) return toast.error("You don't have permission to issue books.");
     if (!profile?.school_id) return toast.error("No school assigned.");
     const book = books?.find((b) => b.id === form.book_id);
     if (!book || book.available_copies < 1) return toast.error("Book not available.");
