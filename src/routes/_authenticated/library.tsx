@@ -203,7 +203,8 @@ function BooksTab() {
 
 function LoansTab() {
   const qc = useQueryClient();
-  const { profile, user } = useAuth();
+  const { profile, user, hasRole } = useAuth();
+  const canManage = hasRole("super_admin") || hasRole("school_admin") || hasRole("staff");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ book_id: "", student_id: "", due_date: "" });
 
