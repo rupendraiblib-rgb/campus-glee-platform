@@ -259,6 +259,7 @@ function LoansTab() {
   };
 
   const markReturned = async (loanId: string, bookId: string) => {
+    if (!canManage) return toast.error("You don't have permission to return books.");
     const { error } = await supabase.from("book_loans")
       .update({ status: "returned", return_date: new Date().toISOString().slice(0, 10) })
       .eq("id", loanId);
